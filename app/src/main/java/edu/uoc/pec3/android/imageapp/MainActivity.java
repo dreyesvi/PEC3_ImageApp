@@ -1,6 +1,14 @@
 package edu.uoc.pec3.android.imageapp;
 
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,10 +22,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // TAG logs
     private final String TAG = this.getClass().getSimpleName();
 
+    // constante para solicitud de permisos de captura de imagen
+    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    private static final int MY_PERMISSIONS_REQUEST_CAMERA =123;
+
+    private Uri fileUri;
+
     // Views
     private Button mButtonOpenImage;
     private ImageView mImageView;
     private TextView mTextView;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +66,65 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+
+
+
         if (v == mButtonOpenImage) {
             // launching an intent to get an image from camera
+
+            int permissionCheck = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.CAMERA);
+
+            if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                // El usuario ya ha aceptado los permisos
+
+                Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                //fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+                startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+
+            }
+            else {
+                // Se solictan permisos
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+
+
+            }
+
+
         }
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                    Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                    //fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+                    startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
 }
