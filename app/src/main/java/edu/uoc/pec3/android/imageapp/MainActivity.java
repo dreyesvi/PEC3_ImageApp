@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mButtonOpenImage;
     private ImageView mImageView;
     private TextView mTextView;
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
