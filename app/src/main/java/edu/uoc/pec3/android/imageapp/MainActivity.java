@@ -70,14 +70,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         if (v == mButtonOpenImage) {
-            // launching an intent to get an image from camera
 
+            // Verificar si ya se han aceptado los permisos para utilizar la cámara
             int permissionCheck = ContextCompat.checkSelfPermission(this,
                     Manifest.permission.CAMERA);
 
             if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                 // El usuario ya ha aceptado los permisos
 
+                // Lanza un intent para capturar la imagen de la cámara
                 Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
                 //fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
@@ -99,14 +100,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+
+        // Gestiona la respuesta del usuario a la solicitud de permisos
         switch (requestCode) {
+
+            // Si la solicitud de permiso es para la cámara
             case MY_PERMISSIONS_REQUEST_CAMERA: {
+
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
+                   // Se autoriza a la app a usar la cámara por lo que se llama al intent.
 
                     Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
