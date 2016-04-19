@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Lanza un intent para capturar la imagen de la cámara
                 Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
+
                 //fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
                 startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
 
