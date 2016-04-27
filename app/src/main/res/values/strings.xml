@@ -4,4 +4,7 @@
     <string name="text_no_image">No image selected</string>
     <!-- Button -->
     <string name="button_open_new_image">CAPTURE NEW IMAGE</string>
+    <!-- Menus -->
+    <string name="menu_item_borrar">Borrar</string>
+    <string name="menu_item_guardar">Guardar</string>
 </resources>

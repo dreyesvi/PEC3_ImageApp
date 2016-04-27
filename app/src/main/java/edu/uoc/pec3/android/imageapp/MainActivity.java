@@ -73,7 +73,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        return super.onOptionsItemSelected(item);
+
+        // Gestionar la seleccion de un item del menu
+        switch (id){
+
+            case R.id.menu_item_borrar:
+                    // borrarItem();
+                return true;
+            case R.id.menu_item_guardar:
+                    // guardarFoto();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+
     }
 
     @Override

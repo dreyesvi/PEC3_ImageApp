@@ -1,3 +1,19 @@
 <menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MainActivity">
+        <!-- Añadir items de menus-->
+        <item
+            android:id="@+id/menu_item_borrar"
+            android:icon="@android:drawable/ic_menu_delete"
+            android:title="@string/menu_item_borrar"
+            app:showAsAction="ifRoom"/>
+
+        <item
+            android:id="@+id/menu_item_guardar"
+            android:icon="@android:drawable/ic_menu_save"
+            android:title="@string/menu_item_guardar"
+            app:showAsAction="ifRoom"/>
+
+
 </menu>
