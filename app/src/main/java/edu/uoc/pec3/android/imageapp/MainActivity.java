@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -78,10 +79,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (id){
 
             case R.id.menu_item_borrar:
-                    // borrarItem();
+                    ImagenAccion.borrarImagen();
                 return true;
             case R.id.menu_item_guardar:
-                    // guardarFoto();
+                    ImagenAccion.guardarImagen(mImageView.getDrawingCache());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
