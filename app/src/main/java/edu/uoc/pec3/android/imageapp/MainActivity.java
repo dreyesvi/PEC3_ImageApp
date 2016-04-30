@@ -2,14 +2,17 @@ package edu.uoc.pec3.android.imageapp;
 
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -20,11 +23,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import java.io.File;
+import java.io.IOError;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -36,10 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // constante para solicitud de permisos de captura de imagen
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA =123;
-
-
-    private Uri fileUri;
-    String mCurrentPhotoPath;
 
     // Views
     private Button mButtonOpenImage;
@@ -59,6 +57,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Set listeners
         mButtonOpenImage.setOnClickListener(this);
+
+        //Verifica si existe una imagen guardada y en tal caso la muestra
+        File file = new File(ImagenAccion.getPathFichero());
+
+        if (file.exists()) {
+
+            mImageView.setImageBitmap(BitmapFactory.decodeFile(ImagenAccion.getPathFichero()));
+            mTextView.setVisibility(View.INVISIBLE);
+        }
+
+
     }
 
     @Override
@@ -79,10 +88,106 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (id){
 
             case R.id.menu_item_borrar:
-                    ImagenAccion.borrarImagen();
+
+                    File file = new File(ImagenAccion.getPathFichero());
+
+                if (file.exists()) {
+
+                    // dialogo de confirmación
+
+                    AlertDialog.Builder alert = new AlertDialog.Builder(
+                            MainActivity.this);
+                    alert.setTitle("Delete Image!!");
+                    alert.setMessage("Do you want to delete this image?");
+                    alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+
+                           if (ImagenAccion.borrarImagen()) {
+                               // Borra la imagen
+                               mImageView.setImageDrawable(null);
+                               // Muestra el texto de que no hay imagen.
+                               mTextView.setVisibility(View.VISIBLE);
+
+                               //Mensaje de confirmación
+                               Context context = getApplicationContext();
+                               CharSequence text = "Image Deleted Correctly!!";
+                               int duration = Toast.LENGTH_SHORT;
+
+                               Toast toast = Toast.makeText(context, text, duration);
+                               toast.show();
+                           }
+                            else
+                           {
+                               // no existe la imagen.
+                               Context context = getApplicationContext();
+                               CharSequence text = "Ops!! Image is empty !!";
+                               int duration = Toast.LENGTH_SHORT;
+
+                               Toast toast = Toast.makeText(context, text, duration);
+                               toast.show();
+
+                           }
+
+                            dialog.dismiss();
+
+                        }
+                    });
+                    alert.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            dialog.dismiss();
+                        }
+                    });
+
+                    alert.show();
+
+                }
+
+
                 return true;
             case R.id.menu_item_guardar:
-                    ImagenAccion.guardarImagen(mImageView.getDrawingCache());
+
+                boolean hasDrawable = (mImageView.getDrawable() != null);
+                if(hasDrawable) {
+
+
+                       if (ImagenAccion.guardarImagen(((BitmapDrawable) mImageView.getDrawable()).getBitmap())) {
+                           // La imagen se ha guardado correctamente
+                           Context context = getApplicationContext();
+                           CharSequence text = "Image Saved Correctly!!";
+                           int duration = Toast.LENGTH_SHORT;
+
+                           Toast toast = Toast.makeText(context, text, duration);
+                           toast.show();
+                       } else {
+                           // La imagen no se ha guardado
+
+                           Context context = getApplicationContext();
+                           CharSequence text = "Ops! Image not Saved!!";
+                           int duration = Toast.LENGTH_SHORT;
+
+                           Toast toast = Toast.makeText(context, text, duration);
+                           toast.show();
+                       }
+                   }
+                    else {
+
+                       // La imagen no se ha guardado
+
+                       Context context = getApplicationContext();
+                       CharSequence text = "Ops! There is not Image !!";
+                       int duration = Toast.LENGTH_SHORT;
+
+                       Toast toast = Toast.makeText(context, text, duration);
+                       toast.show();
+                   }
+
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -114,13 +219,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 File ficheroImagen = null;
 
+                ficheroImagen = ImagenAccion.crearFicheroTemp();
 
-                try {
-                    ficheroImagen = createImageFile();
-                } catch (IOException ex) {
-                    // Error occurred while creating the File
 
-                }
                 // Continue only if the File was successfully created
                 if (ficheroImagen != null) {
                     capturaImagen.putExtra(MediaStore.EXTRA_OUTPUT,
@@ -157,10 +258,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Captura el resultado al volver del Intent.
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-           /* Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mImageView.setImageBitmap(imageBitmap);
-            mTextView.setVisibility(View.INVISIBLE);*/
 
             int targetW = mImageView.getWidth();
             int targetH = mImageView.getHeight();
@@ -168,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		/* Get the size of the image */
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             bmOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+            BitmapFactory.decodeFile(ImagenAccion.getPathFicheroTemp(), bmOptions);
 
 
 
@@ -188,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //bmOptions.inPurgeable = true;
 
 		/* Decode the JPEG file into a Bitmap */
-            Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+            Bitmap bitmap = BitmapFactory.decodeFile(ImagenAccion.getPathFicheroTemp(), bmOptions);
 
 		/* Associate the Bitmap to the ImageView */
             mImageView.setImageBitmap(bitmap);
@@ -198,24 +295,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         }
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        //mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        mCurrentPhotoPath = image.getAbsolutePath();
-        return image;
     }
 
     @Override
@@ -232,18 +311,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                   // Se autoriza a la app a usar la cámara por lo que se llama al intent.
+                    // Verificar si ya se han aceptado los permisos para guardar la foto
+                    int permissionCheckStorage = ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-                    Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    if (permissionCheckStorage == PackageManager.PERMISSION_DENIED) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                    }
+                    else{
 
-                    //fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-                    startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+
+                        // Lanza un intent para capturar la imagen de la cámara
+                        Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                        File ficheroImagen = null;
+
+                        ficheroImagen = ImagenAccion.crearFicheroTemp();
+
+
+                        // Continue only if the File was successfully created
+                        if (ficheroImagen != null) {
+                            capturaImagen.putExtra(MediaStore.EXTRA_OUTPUT,
+                                    Uri.fromFile(ficheroImagen));
+
+
+                            startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                        }
+
+                    }
 
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    Context context = getApplicationContext();
+                    CharSequence text = "Ops! Permission to CAMERA DENIED !!";
+                    int duration = Toast.LENGTH_SHORT;
+
+                    Toast toast = Toast.makeText(context, text, duration);
+                    toast.show();
+
+
                 }
                 return;
             }
@@ -254,18 +363,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // Se autoriza a la app a usar la cámara por lo que se llama al intent.
+                    // Verificar si ya se han aceptado los permisos para utilizar la cámara
 
-                    Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    int permissionCheckCamera = ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.CAMERA);
 
-                    //fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-                    startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                    if (permissionCheckCamera == PackageManager.PERMISSION_DENIED) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.CAMERA},
+                                MY_PERMISSIONS_REQUEST_CAMERA);
+                    }
+                    else{
+
+                        // Lanza un intent para capturar la imagen de la cámara
+                        Intent capturaImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                        File ficheroImagen = null;
+
+                        ficheroImagen = ImagenAccion.crearFicheroTemp();
+
+
+                        // Continue only if the File was successfully created
+                        if (ficheroImagen != null) {
+                            capturaImagen.putExtra(MediaStore.EXTRA_OUTPUT,
+                                    Uri.fromFile(ficheroImagen));
+
+
+                            startActivityForResult(capturaImagen, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                        }
+                    }
+
 
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                Context context = getApplicationContext();
+                CharSequence text = "Ops! Permission to SAVE IMAGE DENIED !!";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
                 }
 
                 return;
@@ -273,8 +410,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
 
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
