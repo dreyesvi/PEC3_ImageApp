@@ -3,10 +3,11 @@
     package="edu.uoc.pec3.android.imageapp">
 
 
-    // Se añaden solicitud de permisos para poder utilizar la cámara y el almacenamiento externo (para APIS menores a 19).
+    // Se añaden solicitud de permisos para poder utilizar la cámara y el almacenamiento externo.
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    // Se añade el hardware que necesita la app
     <uses-feature android:name="android.hardware.camera" />
 
 
